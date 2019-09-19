@@ -3,6 +3,7 @@ namespace wcf\system\background\job;
 use wcf\data\unfurl\UnfurlUrl;
 use wcf\data\unfurl\UnfurlUrlAction;
 use wcf\data\unfurl\UrlAction;
+use wcf\util\StringUtil;
 use wcf\util\UnfurlUrlUtil;
 use function wcf\functions\exception\logThrowable;
 
@@ -52,14 +53,26 @@ class UnfurlURLJob extends AbstractBackgroundJob {
 		try {
 			$url = new UnfurlUrlUtil($this->url->url);
 			
-			$urlAction = new UnfurlUrlAction([$this->url], 'update', [
-				'data' => [
-					'title' => $url->getTitle(),
-					'description' => $url->getDescription(),
-					'status' => 'SUCCESSFUL'
-				]
-			]);
-			$urlAction->executeAction();
+			if (empty(StringUtil::trim($url->getTitle()))) {
+				$urlAction = new UnfurlUrlAction([$this->url], 'update', [
+					'data' => [
+						'title' => '',
+						'description' => '',
+						'status' => 'REJECTED'
+					]
+				]);
+				$urlAction->executeAction();
+			}
+			else {
+				$urlAction = new UnfurlUrlAction([$this->url], 'update', [
+					'data' => [
+						'title' => $url->getTitle(),
+						'description' => $url->getDescription() ?? '',
+						'status' => 'SUCCESSFUL'
+					]
+				]);
+				$urlAction->executeAction();
+			}
 		}
 		catch (\InvalidArgumentException $e) {
 			logThrowable($e);
