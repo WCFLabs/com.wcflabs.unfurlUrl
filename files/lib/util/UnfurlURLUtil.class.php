@@ -55,7 +55,7 @@ final class UnfurlUrlUtil {
 	private function fetchUrl() {
 		try {
 			$request = new HTTPRequest($this->url, [
-				'maxLength' => pow(10, 9),
+				'maxLength' => 10 * (1 << 20),
 				'maxDepth' => 3
 			]);
 			// set own user agent, which contains the package identifier to block the bot to unfurly urls 
@@ -201,16 +201,38 @@ final class UnfurlUrlUtil {
 			// wikipedia 
 			$element = $this->getDomDocument()->getElementById('mw-content-text');
 			if ($element !== null) {
+				// first remove tables 
+				$tables = $element->getElementsByTagName('table');
+				
+				while ($tables->length) {
+					DOMUtil::removeNode($tables->item(0));
+				}
+				
 				$p = $element->getElementsByTagName('p');
 				
 				if ($p->length) {
 					/** @var \DOMElement $first */
 					$first = $p->item(0);
 					
+					// remove subs 
 					$subs = $first->getElementsByTagName('sup');
 					
-					while($subs->length) {
+					while ($subs->length) {
 						DOMUtil::removeNode($subs->item(0));
+					}
+					
+					$styles = $first->getElementsByTagName('style');
+					
+					while ($styles->length) {
+						DOMUtil::removeNode($styles->item(0));
+					}
+					
+					// remove no printable 
+					$spans = $first->getElementsByTagName('span');
+					for ($i = $spans->length - 1; $i >= 0; $i--) {
+						if ($spans->item($i)->attributes->getNamedItem('class') !== null && $spans->item($i)->attributes->getNamedItem('class')->nodeValue == 'noprint') {
+							DOMUtil::removeNode($spans->item($i));
+						}
 					}
 					
 					return StringUtil::stripHTML($first->nodeValue);
