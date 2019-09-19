@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data xmlns="http://www.woltlab.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.woltlab.com http://www.woltlab.com/XSD/2019/eventListener.xsd">
+	<import>
+		<eventlistener name="htmlInputNodeProcessor">
+			<eventclassname>wcf\system\html\input\node\HtmlInputNodeProcessor</eventclassname>
+			<eventname>convertPlainLinks</eventname>
+			<listenerclassname>wcf\system\event\listener\UnfurlUrlListener</listenerclassname>
+		</eventlistener>
+		<eventlistener name="htmlInputNodeProcessorAdmin">
+			<eventclassname>wcf\system\html\input\node\HtmlInputNodeProcessor</eventclassname>
+			<eventname>convertPlainLinks</eventname>
+			<listenerclassname>wcf\system\event\listener\UnfurlUrlListener</listenerclassname>
+			<environment>admin</environment>
+		</eventlistener>
+		<eventlistener name="htmlOutputNodeProcessor">
+			<eventclassname>wcf\system\html\output\node\HtmlOutputNodeProcessor</eventclassname>
+			<eventname>beforeProcess</eventname>
+			<listenerclassname>wcf\system\event\listener\UnfurlUrlOutputListener</listenerclassname>
+		</eventlistener>
+		<eventlistener name="htmlInputNodeProcessorAdmin">
+			<eventclassname>wcf\system\html\output\node\HtmlOutputNodeProcessor</eventclassname>
+			<eventname>beforeProcess</eventname>
+			<listenerclassname>wcf\system\event\listener\UnfurlUrlOutputListener</listenerclassname>
+			<environment>admin</environment>
+		</eventlistener>
+	</import>
+</data>

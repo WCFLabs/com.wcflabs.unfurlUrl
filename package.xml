@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package xmlns="http://www.woltlab.com" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.woltlab.com http://www.woltlab.com/XSD/2019/package.xsd" name="com.wcflabs.unfurlUrl">
+	<packageinformation>
+		<packagename>Unfurl URL</packagename>
+		<packagedescription>Creates a rich preview for the URL in user generated content.</packagedescription>
+		<version>1.0.0 Alpha 1</version>
+		<date>2019-10-19</date>
+	</packageinformation>
+	
+	<authorinformation>
+		<author>Joshua Rüsweg</author>
+		<authorurl>https://www.wcflabs.com</authorurl>
+	</authorinformation>
+	
+	<requiredpackages>
+		<requiredpackage minversion="5.2.0">com.woltlab.wcf</requiredpackage>
+	</requiredpackages>
+	
+	<compatibility>
+		<api version="2019"/>
+	</compatibility>
+	
+	<instructions type="install">
+		<instruction type="file"/>
+		<instruction type="sql"/>
+		<instruction type="objectType"/>
+		<instruction type="eventListener"/>
+		<instruction type="template"/>
+	</instructions>
+</package>
