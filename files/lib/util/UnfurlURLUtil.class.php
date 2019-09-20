@@ -209,21 +209,37 @@ final class UnfurlUrlUtil {
 					DOMUtil::removeNode($tables->item(0));
 				}
 				
+				// remove coordinate p element
+				$coordinate = $this->getDomDocument()->getElementById('coordinates');
+				
 				$p = $element->getElementsByTagName('p');
+				// filter p elements
+				for ($i = $p->length - 1; $i >= 0; $i--) {
+					// remove empty p tags
+					if ($p->item($i)->attributes->getNamedItem('class') !== null && $p->item($i)->attributes->getNamedItem('class')->nodeValue == 'mw-empty-elt') {
+						DOMUtil::removeNode($p->item($i));
+					}
+					
+					if ($coordinate !== null) {
+						if (DOMUtil::contains($p->item($i), $coordinate)) {
+							DOMUtil::removeNode($p->item($i));
+							$coordinate = null; 
+						}
+					}
+				}
 				
 				if ($p->length) {
 					/** @var \DOMElement $first */
 					$first = $p->item(0);
 					
-					// remove subs 
-					$subs = $first->getElementsByTagName('sup');
-					
-					while ($subs->length) {
-						DOMUtil::removeNode($subs->item(0));
+					// remove sups 
+					$sups = $first->getElementsByTagName('sup');
+					while ($sups->length) {
+						DOMUtil::removeNode($sups->item(0));
 					}
 					
+					// remove style tags
 					$styles = $first->getElementsByTagName('style');
-					
 					while ($styles->length) {
 						DOMUtil::removeNode($styles->item(0));
 					}
