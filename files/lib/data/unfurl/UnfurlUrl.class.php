@@ -12,6 +12,7 @@ use wcf\util\Url;
  * @license	GNU Lesser General Public License <http://opensource.org/licenses/lgpl-license.php>
  * 
  * @property-read string $url
+ * @property-read string $urlHash
  * @property-read string $title
  * @property-read string $description
  */
@@ -51,9 +52,9 @@ class UnfurlUrl extends DatabaseObject {
 		
 		$sql = "SELECT		unfurl_url.*
 			FROM		wcf".WCF_N."_unfurl_url unfurl_url
-			WHERE		unfurl_url.url = ?";
+			WHERE		unfurl_url.urlHash = ?";
 		$statement = WCF::getDB()->prepareStatement($sql);
-		$statement->execute([$url]);
+		$statement->execute([sha1($url)]);
 		$row = $statement->fetchArray();
 		if (!$row) $row = [];
 		

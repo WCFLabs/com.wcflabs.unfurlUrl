@@ -42,7 +42,8 @@ class UnfurlUrlAction extends AbstractDatabaseObjectAction {
 		if (!$object->urlID) {
 			$returnValues = (new self([], 'create', [
 				'data' => [
-					'url' => $this->parameters['data']['url']
+					'url' => $this->parameters['data']['url'], 
+					'urlHash' => sha1($this->parameters['data']['url'])
 				]
 			]))->executeAction();
 			
