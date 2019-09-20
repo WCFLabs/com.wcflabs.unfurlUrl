@@ -1,7 +1,9 @@
 <?php
 namespace wcf\data\unfurl;
 use wcf\data\DatabaseObject;
+use wcf\system\request\LinkHandler;
 use wcf\system\WCF;
+use wcf\util\CryptoUtil;
 use wcf\util\Url;
 
 /**
@@ -15,6 +17,9 @@ use wcf\util\Url;
  * @property-read string $urlHash
  * @property-read string $title
  * @property-read string $description
+ * @property-read string $imageHash
+ * @property-read string $imageUrl
+ * @property-read string $imageType
  */
 class UnfurlUrl extends DatabaseObject {
 	/**
@@ -37,6 +42,32 @@ class UnfurlUrl extends DatabaseObject {
 		$url = Url::parse($this->url);
 		
 		return $url->offsetGet(PHP_URL_HOST);
+	}
+	
+	/**
+	 * Returns the image url for the url. 
+	 * 
+	 * @return string|null
+	 * @throws \wcf\system\exception\SystemException
+	 */
+	public function getImageUrl() {
+		if (!empty($this->imageHash)) {
+			return WCF::getPath() . 'images/unfurlUrl/'.substr($this->imageHash, 0, 2).'/'. $this->imageHash;
+		}
+		else if (!empty($this->imageUrl)) {
+			if (MODULE_IMAGE_PROXY) {
+				$key = CryptoUtil::createSignedString($this->imageUrl);
+				
+				return LinkHandler::getInstance()->getLink('ImageProxy', [
+					'key' => $key
+				]);
+			}
+			else if (IMAGE_ALLOW_EXTERNAL_SOURCE) {
+				return $this->imageUrl;
+			}
+		}
+		
+		return null; 
 	}
 	
 	/**

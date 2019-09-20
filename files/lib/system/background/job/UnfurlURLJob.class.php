@@ -3,6 +3,8 @@ namespace wcf\system\background\job;
 use wcf\data\unfurl\UnfurlUrl;
 use wcf\data\unfurl\UnfurlUrlAction;
 use wcf\data\unfurl\UrlAction;
+use wcf\system\WCF;
+use wcf\util\FileUtil;
 use wcf\util\StringUtil;
 use wcf\util\UnfurlUrlUtil;
 use function wcf\functions\exception\logThrowable;
@@ -64,12 +66,81 @@ class UnfurlURLJob extends AbstractBackgroundJob {
 				$urlAction->executeAction();
 			}
 			else {
+				$data = [
+					'title' => $url->getTitle(),
+					'description' => $url->getDescription() ?? '',
+					'status' => 'SUCCESSFUL'
+				];
+				
+				if ($url->getImageUrl()) {
+					if (MODULE_IMAGE_PROXY || IMAGE_ALLOW_EXTERNAL_SOURCE) {
+						$image = UnfurlUrlUtil::downloadImageFromUrl($url->getImageUrl());
+						
+						if ($image !== null) {
+							$imageData = @getimagesizefromstring($image);
+							
+							// image is squared
+							if ($imageData[0] == $imageData[1]) {
+								$data['imageUrl'] = $url->getImageUrl();
+								$data['imageType'] = 'SQUARED';
+							}
+							else if ($imageData[0] > 300 && $imageData[1] > 150) {
+								$data['imageUrl'] = $url->getImageUrl();
+								$data['imageType'] = 'COVER';
+							}
+							else {
+								$data['imageType'] = 'NOIMAGE';
+								throw new \RuntimeException('Image not suitable');
+							}
+						}
+					}
+					else {
+						$image = UnfurlUrlUtil::downloadImageFromUrl($url->getImageUrl());
+						
+						if ($image !== null) {
+							$imageData = @getimagesizefromstring($image);
+							
+							// image is squared
+							if ($imageData[0] == $imageData[1]) {
+								$data['imageType'] = 'SQUARED';
+							}
+							else if ($imageData[0] > 300 && $imageData[1] > 150) {
+								$data['imageType'] = 'COVER';
+							}
+							
+							if (isset($data['imageType'])) {
+								switch ($imageData[2]) {
+									case IMAGETYPE_PNG:
+										$extension = 'png';
+										break;
+									case IMAGETYPE_GIF:
+										$extension = 'gif';
+										break;
+									case IMAGETYPE_JPEG:
+										$extension = 'jpg';
+										break;
+									default:
+										throw new \RuntimeException();
+								}
+								
+								$data['imageHash'] = sha1($image) . '.' . $extension;
+								
+								$path = WCF_DIR.'images/unfurlUrl/'.substr($data['imageHash'], 0, 2);
+								FileUtil::makePath($path);
+								
+								$fileLocation = $path .'/'.$data['imageHash'];
+								
+								file_put_contents($fileLocation, $image);
+								
+								// update mtime for correct expiration calculation
+								@touch($fileLocation);
+							}
+						}
+					}
+				}
+				
 				$urlAction = new UnfurlUrlAction([$this->url], 'update', [
-					'data' => [
-						'title' => $url->getTitle(),
-						'description' => $url->getDescription() ?? '',
-						'status' => 'SUCCESSFUL'
-					]
+					'data' => $data
 				]);
 				$urlAction->executeAction();
 			}

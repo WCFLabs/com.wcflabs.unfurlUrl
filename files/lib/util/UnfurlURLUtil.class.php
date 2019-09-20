@@ -4,6 +4,7 @@ use wcf\data\package\PackageCache;
 use wcf\system\exception\HTTPNotFoundException;
 use wcf\system\exception\HTTPUnauthorizedException;
 use wcf\system\WCF;
+use wcf\util\exception\HTTPException;
 
 /**
  * Helper class to unfurl specific urls.
@@ -158,7 +159,6 @@ final class UnfurlUrlUtil {
 			$metaTags = $this->getDomDocument()->getElementsByTagName('meta');
 			
 			// twitter:description
-			reset($metaTags);
 			foreach ($metaTags as $metaTag) {
 				foreach ($metaTag->attributes as $attr) {
 					if ($attr->nodeName == 'property' && $attr->value == 'twitter:description') {
@@ -172,6 +172,7 @@ final class UnfurlUrlUtil {
 			}
 			
 			// og:description
+			reset($metaTags);
 			foreach ($metaTags as $metaTag) {
 				foreach ($metaTag->attributes as $attr) {
 					if ($attr->nodeName == 'property' && $attr->value == 'og:description') {
@@ -241,6 +242,130 @@ final class UnfurlUrlUtil {
 		}
 		
 		return null;
+	}
+	
+	/**
+	 * Returns the image url for the current url.
+	 *  
+	 * @return string|null
+	 * @throws \Exception
+	 */
+	public function getImageUrl() {
+		if (!empty($this->body)) {
+			$metaTags = $this->getDomDocument()->getElementsByTagName('meta');
+			
+			// twitter:image:src
+			foreach ($metaTags as $metaTag) {
+				foreach ($metaTag->attributes as $attr) {
+					if ($attr->nodeName == 'property' && $attr->value == 'twitter:image:src') {
+						foreach ($attr->parentNode->attributes as $attr) {
+							if ($attr->nodeName == 'content') {
+								return $attr->value;
+							}
+						}
+					}
+				}
+			}
+			
+			// og:image
+			reset($metaTags);
+			foreach ($metaTags as $metaTag) {
+				foreach ($metaTag->attributes as $attr) {
+					if ($attr->nodeName == 'property' && $attr->value == 'og:image') {
+						foreach ($attr->parentNode->attributes as $attr) {
+							if ($attr->nodeName == 'content') {
+								return $attr->value;
+							}
+						}
+					}
+				}
+			}
+			
+			// apple touch icon 
+			$linkTags = $this->getDomDocument()->getElementsByTagName('link');
+			
+			foreach ($linkTags as $linkTag) {
+				foreach ($linkTag->attributes as $attr) {
+					if ($attr->nodeName == 'rel' && $attr->value == 'apple-touch-icon') {
+						foreach ($attr->parentNode->attributes as $attr) {
+							if ($attr->nodeName == 'href') {
+								return $attr->value;
+							}
+						}
+					}
+				}
+			}
+			
+			// @TODO manifest
+		}
+		
+		return null; 
+	}
+	
+	/**
+	 * Downloads the image from a url and returns the image body. 
+	 * 
+	 * @param $url
+	 * @return string|null
+	 * @throws \Exception
+	 */
+	public static function downloadImageFromUrl($url) {
+		try {
+			// download image
+			try {
+				// rewrite schemaless URLs to https
+				$scheme = parse_url($url, PHP_URL_SCHEME);
+				if (!$scheme) {
+					if (StringUtil::startsWith($url, '//')) {
+						$url = 'https:'.$url;
+					}
+					else {
+						throw new \DomainException();
+					}
+				}
+				
+				$request = new HTTPRequest($url, [
+					'maxLength' => 10 * (1 << 20) // download at most 10 MiB
+				]);
+				$request->addHeader('Accept', 'image/*');
+				$request->execute();
+			}
+			catch (\Exception $e) {
+				$chain = $e;
+				do {
+					if ($chain instanceof HTTPException) {
+						throw new \DomainException();
+					}
+					
+					if (strpos($chain->getMessage(), 'Can not connect to') === 0) {
+						throw new \DomainException();
+					}
+				}
+				while ($chain = $chain->getPrevious());
+				
+				throw $e;
+			}
+			
+			$image = $request->getReply()['body'];
+			
+			// check file type
+			$imageData = @getimagesizefromstring($image);
+			if (!$imageData) throw new \DomainException();
+			
+			switch ($imageData[2]) {
+				case IMAGETYPE_PNG:
+				case IMAGETYPE_GIF:
+				case IMAGETYPE_JPEG:
+					break;
+				default:
+					throw new \DomainException();
+			}
+			
+			return $image;
+		}
+		catch (\DomainException $e) {
+			return null;
+		}
 	}
 	
 	/**

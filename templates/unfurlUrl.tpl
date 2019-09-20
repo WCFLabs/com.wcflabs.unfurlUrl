@@ -1,8 +1,8 @@
 {if $object->status == "SUCCESSFUL"}
-	<div class="box128 unfurlCard">
+	<div class="unfurlCard {if $object->imageType == 'COVER' && !$object->getImageUrl()|empty}unfurlLargeContentImage{elseif $object->imageType == 'SQUARED' && !$object->getImageUrl()|empty}unfurlSquaredContentImage{/if}">
 		<a href="{$object->url}">
-			<div></div>
-			<div>
+			<div{if !$object->getImageUrl()|empty} style="background-image: url({$object->getImageUrl()})"{/if}></div>
+			<div class="unfurlInformation">
 				<div class="urlTitle">{$object->title}</div>
 				<div class="urlDescription">{$object->description}</div>
 				<div class="urlHost">{if $object->getHost() == 'wcflabs.de' || $object->getHost() == 'wcflabs.com'}<img src="{$__wcf->getPath()}/images/unfurlUrl/wcflabs_logo_mini.svg" alt="{$object->getHost()}">{else}{$object->getHost()}{/if}</div>
