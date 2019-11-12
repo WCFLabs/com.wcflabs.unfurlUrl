@@ -1,0 +1,37 @@
+name: WoltLab Package Building on package release
+
+# should be release on publish
+on: [release]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # pull own repository
+      - name: Pull source branch
+        uses: actions/checkout@v1
+
+      # pull WCFLabs/WoltLab-Package-Actions for the package build script
+      - name: Pull the branch build from WCFLabs/WoltLab-Package-Actions
+        uses: actions/checkout@v1
+        with:
+          repository: WCFLabs/WoltLab-Package-Actions
+          ref: build
+
+      - name: Validate package.xml
+        run: test -f "package.xml"
+
+      - name: Validate build.sh file from WCFLabs/WoltLab-Package-Actions
+        run: cd .. && cd WoltLab-Package-Actions && test -f "build.sh"
+
+      - name: Copy build file into package repository
+        run: cp ../WoltLab-Package-Actions/build.sh ./ && test -f "build.sh"
+
+      - name: Run package build script
+        run: sh build.sh
+
+      - name: Upload package to release
+        uses: JasonEtco/upload-to-release@master
+        with:
+          args: package.tar application/x-tar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
