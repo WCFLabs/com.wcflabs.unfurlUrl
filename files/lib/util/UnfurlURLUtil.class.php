@@ -59,9 +59,9 @@ final class UnfurlUrlUtil {
 				'maxLength' => 10 * (1 << 20),
 				'maxDepth' => 3
 			]);
-			// set own user agent, which contains the package identifier to block the bot to unfurly urls 
-			// @TODO find better ua
-			$request->addHeader('user-agent', "HTTP.PHP (HTTPRequest.class.php; WoltLab Suite/".WCF_VERSION."/com.wcflabs.unfurlUrl; ".(WCF::getLanguage()->languageCode ? WCF::getLanguage()->languageCode : 'en').")");
+			
+			// set own user agent, which contains the package identifier to block the bot
+			$request->addHeader('user-agent', "WoltLab Suite ".WCF_VERSION."; com.wcflabs.unfurlUrl +https://wcflabs.de/en/unfurl-url/; ".(WCF::getLanguage()->languageCode ? WCF::getLanguage()->languageCode : 'en').")");
 			$request->execute();
 			
 			$this->body = $request->getReply()['body'];
