@@ -17,6 +17,7 @@
 		color: $wcfContentText;
 		
 		.unfurlInformation {
+			position: relative;
 			padding: 10px 20px 20px;
 		}
 		
@@ -36,6 +37,9 @@
 			@include wcfFontSmall;
 			float: right;
 			color: $wcfContentDimmedText;
+			bottom: 5px;
+			position: absolute;
+			right: 5px;
 			
 			img {
 				// the WoltLab Suite uses important here, too :/ 
