@@ -107,6 +107,11 @@ class UnfurlURLJob extends AbstractBackgroundJob {
 								$data['imageType'] = 'COVER';
 							}
 							
+							// check whether the image is to large
+							if (max($imageData[0], $imageData[1]) > 1500) {
+								$data['imageType'] = 'NOIMAGE';
+							}
+							
 							if (isset($data['imageType'])) {
 								switch ($imageData[2]) {
 									case IMAGETYPE_PNG:
