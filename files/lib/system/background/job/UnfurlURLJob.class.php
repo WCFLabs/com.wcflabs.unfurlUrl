@@ -90,7 +90,6 @@ class UnfurlURLJob extends AbstractBackgroundJob {
 							}
 							else {
 								$data['imageType'] = 'NOIMAGE';
-								throw new \RuntimeException('Image not suitable');
 							}
 						}
 					}
