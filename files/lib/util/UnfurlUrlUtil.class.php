@@ -27,7 +27,7 @@ final class UnfurlUrlUtil {
 	private $body;
 	
 	/**
-	 * The dom document of the fetched website. 
+	 * The dom document of the fetched website.
 	 * @var \DOMDocument
 	 */
 	private $domDocument;
@@ -61,7 +61,7 @@ final class UnfurlUrlUtil {
 			]);
 			
 			// set own user agent, which contains the package identifier to block the bot
-			$request->addHeader('user-agent', "WoltLab Suite ".WCF_VERSION."; com.wcflabs.unfurlUrl +https://wcflabs.de/en/unfurl-url/; ".(WCF::getLanguage()->languageCode ? WCF::getLanguage()->languageCode : 'en').")");
+			$request->addHeader('user-agent', self::getUserAgent());
 			$request->execute();
 			
 			$this->body = $request->getReply()['body'];
@@ -343,6 +343,8 @@ final class UnfurlUrlUtil {
 				$request = new HTTPRequest($url, [
 					'maxLength' => 10 * (1 << 20) // download at most 10 MiB
 				]);
+				// set own user agent, which contains the package identifier to block the bot
+				$request->addHeader('user-agent', self::getUserAgent());
 				$request->addHeader('Accept', 'image/*');
 				$request->execute();
 			}
@@ -400,5 +402,14 @@ final class UnfurlUrlUtil {
 	 */
 	public static final function getAttrName() {
 		return 'unfurl-url-'. self::getPackageID() .'-id';
+	}
+	
+	/**
+	 * Returns the user agent for the requests.
+	 *
+	 * @return string
+	 */
+	private static function getUserAgent() {
+		return "WoltLab Suite ".WCF_VERSION."; com.wcflabs.unfurlUrl +https://wcflabs.de/en/unfurl-url/; ".(WCF::getLanguage()->languageCode ? WCF::getLanguage()->languageCode : 'en').")";
 	}
 }
