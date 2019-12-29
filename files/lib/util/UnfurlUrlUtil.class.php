@@ -410,6 +410,6 @@ final class UnfurlUrlUtil {
 	 * @return string
 	 */
 	private static function getUserAgent() {
-		return "WoltLab Suite ".WCF_VERSION."; com.wcflabs.unfurlUrl +https://wcflabs.de/en/unfurl-url/; ".(WCF::getLanguage()->languageCode ? WCF::getLanguage()->languageCode : 'en').")";
+		return "WoltLab Suite; com.wcflabs.unfurlUrl +https://wcflabs.de/en/unfurl-url/; ".(WCF::getLanguage()->languageCode ? WCF::getLanguage()->languageCode : 'en').")";
 	}
 }
