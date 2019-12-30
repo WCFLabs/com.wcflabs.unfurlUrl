@@ -67,77 +67,60 @@ class UnfurlURLJob extends AbstractBackgroundJob {
 			}
 			else {
 				$data = [
-					'title' => $url->getTitle(),
-					'description' => $url->getDescription() ?? '',
+					'title' => StringUtil::truncate($url->getTitle(), 255),
+					'description' => $url->getDescription() !== null ? StringUtil::truncate($url->getDescription(), 500) : '',
 					'status' => 'SUCCESSFUL'
 				];
 				
 				if ($url->getImageUrl()) {
-					if (MODULE_IMAGE_PROXY || IMAGE_ALLOW_EXTERNAL_SOURCE) {
-						$image = UnfurlUrlUtil::downloadImageFromUrl($url->getImageUrl());
+					$image = UnfurlUrlUtil::downloadImageFromUrl($url->getImageUrl());
+					
+					if ($image !== null) {
+						$imageData = @getimagesizefromstring($image);
 						
-						if ($image !== null) {
-							$imageData = @getimagesizefromstring($image);
-							
+						// filter images which are too large or too small
+						if (max($imageData[0], $imageData[1]) > 1500 || ($imageData[0] !== $imageData[1] && ($imageData[0] < 300 && $imageData[1] < 150)) || min($imageData[0], $imageData[1]) < 50) {
+							$data['imageType'] = 'NOIMAGE';
+						}
+						else {
 							// image is squared
-							if ($imageData[0] == $imageData[1]) {
+							if ($imageData[0] === $imageData[1]) {
 								$data['imageUrl'] = $url->getImageUrl();
 								$data['imageType'] = 'SQUARED';
-							}
-							else if ($imageData[0] > 300 && $imageData[1] > 150) {
-								$data['imageUrl'] = $url->getImageUrl();
-								$data['imageType'] = 'COVER';
 							}
 							else {
-								$data['imageType'] = 'NOIMAGE';
-							}
-						}
-					}
-					else {
-						$image = UnfurlUrlUtil::downloadImageFromUrl($url->getImageUrl());
-						
-						if ($image !== null) {
-							$imageData = @getimagesizefromstring($image);
-							
-							// image is squared
-							if ($imageData[0] == $imageData[1]) {
-								$data['imageType'] = 'SQUARED';
-							}
-							else if ($imageData[0] > 300 && $imageData[1] > 150) {
+								$data['imageUrl'] = $url->getImageUrl();
 								$data['imageType'] = 'COVER';
 							}
 							
-							// check whether the image is to large
-							if (max($imageData[0], $imageData[1]) > 1500) {
-								$data['imageType'] = 'NOIMAGE';
-							}
-							
-							if (isset($data['imageType'])) {
-								switch ($imageData[2]) {
-									case IMAGETYPE_PNG:
-										$extension = 'png';
-										break;
-									case IMAGETYPE_GIF:
-										$extension = 'gif';
-										break;
-									case IMAGETYPE_JPEG:
-										$extension = 'jpg';
-										break;
-									default:
-										throw new \RuntimeException();
+							// download image, if there is no image proxy or external source images allowed
+							if (!(MODULE_IMAGE_PROXY || IMAGE_ALLOW_EXTERNAL_SOURCE)) {
+								if (isset($data['imageType'])) {
+									switch ($imageData[2]) {
+										case IMAGETYPE_PNG:
+											$extension = 'png';
+											break;
+										case IMAGETYPE_GIF:
+											$extension = 'gif';
+											break;
+										case IMAGETYPE_JPEG:
+											$extension = 'jpg';
+											break;
+										default:
+											throw new \RuntimeException();
+									}
+									
+									$data['imageHash'] = sha1($image) . '.' . $extension;
+									
+									$path = WCF_DIR.'images/unfurlUrl/'.substr($data['imageHash'], 0, 2);
+									FileUtil::makePath($path);
+									
+									$fileLocation = $path .'/'.$data['imageHash'];
+									
+									file_put_contents($fileLocation, $image);
+									
+									@touch($fileLocation);
 								}
-								
-								$data['imageHash'] = sha1($image) . '.' . $extension;
-								
-								$path = WCF_DIR.'images/unfurlUrl/'.substr($data['imageHash'], 0, 2);
-								FileUtil::makePath($path);
-								
-								$fileLocation = $path .'/'.$data['imageHash'];
-								
-								file_put_contents($fileLocation, $image);
-								
-								// update mtime for correct expiration calculation
-								@touch($fileLocation);
 							}
 						}
 					}
