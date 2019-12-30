@@ -3,8 +3,8 @@
 	<packageinformation>
 		<packagename>Unfurl URL</packagename>
 		<packagedescription>Creates a rich preview for the URL in user generated content.</packagedescription>
-		<version>1.0.0 Alpha 1</version>
-		<date>2019-10-19</date>
+		<version>1.0.0</version>
+		<date>2019-12-30</date>
 	</packageinformation>
 	
 	<authorinformation>
@@ -16,9 +16,9 @@
 		<requiredpackage minversion="5.2.0">com.woltlab.wcf</requiredpackage>
 	</requiredpackages>
 	
-	<compatibility>
-		<api version="2019"/>
-	</compatibility>
+	<excludedpackages>
+		<excludedpackage version="6.0.0 Alpha 1">com.woltlab.wcf</excludedpackage>
+	</excludedpackages>
 	
 	<instructions type="install">
 		<instruction type="file"/>
