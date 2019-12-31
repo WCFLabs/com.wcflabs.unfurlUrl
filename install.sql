@@ -7,6 +7,6 @@ CREATE TABLE wcf1_unfurl_url (
 	description TEXT, 
 	imageUrl TEXT, 
 	imageType ENUM('SQUARED', 'COVER', 'NOIMAGE') NOT NULL DEFAULT 'NOIMAGE',
-	imageHash VARCHAR(44) NOT NULL DEFAULT '',
+	imageHash VARCHAR(40) NOT NULL DEFAULT '',
 	status ENUM('PENDING', 'SUCCESSFUL', 'REJECTED') DEFAULT 'PENDING'
 );
