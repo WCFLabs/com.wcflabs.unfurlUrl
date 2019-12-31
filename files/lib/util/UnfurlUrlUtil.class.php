@@ -396,6 +396,15 @@ final class UnfurlUrlUtil {
 	}
 	
 	/**
+	 * Returns the package version for the user agent.
+	 *
+	 * @return string
+	 */
+	private static final function getPackageVersion() {
+		return PackageCache::getInstance()->getPackageByIdentifier('com.wcflabs.unfurlUrl')->packageVersion;
+	}
+	
+	/**
 	 * Returns the unfurl url attr unique for each installation. 
 	 * 
 	 * @return string
@@ -410,6 +419,6 @@ final class UnfurlUrlUtil {
 	 * @return string
 	 */
 	private static function getUserAgent() {
-		return "WoltLab Suite; com.wcflabs.unfurlUrl +https://wcflabs.de/en/unfurl-url/; ".(WCF::getLanguage()->languageCode ? WCF::getLanguage()->languageCode : 'en').")";
+		return 'com.wcflabs.unfurlURL/'. self::getPackageVersion() .' (+https://wcflabs.de/en/unfurl-url/)';
 	}
 }
