@@ -41,7 +41,7 @@ class UnfurlUrl extends DatabaseObject {
 	public function getHost() {
 		$url = Url::parse($this->url);
 		
-		return $url->offsetGet(PHP_URL_HOST);
+		return $url['host'];
 	}
 	
 	/**
